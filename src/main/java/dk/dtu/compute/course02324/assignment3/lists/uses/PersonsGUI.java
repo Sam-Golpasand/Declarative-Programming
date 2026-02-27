@@ -192,16 +192,14 @@ public class PersonsGUI extends GridPane {
      */
     private void update() {
         personsPane.getChildren().clear();
-        double totalWeight = 0;
 
-
+        Optional<Double> totalWeight = persons.stream().map(p -> p.weight).reduce((lol, weight) -> lol + weight);
 
         Map<String, Integer> nameCount = new HashMap<>();
         // adds all persons to the list in the personsPane (with
         // a delete button in front of it)
         for (int i=0; i < persons.size(); i++) {
             Person person = persons.get(i);
-            totalWeight += person.weight;
 
             // Increment or insert name if is already in list of nameCount
             if (nameCount.get(person.name) == null) {
@@ -211,7 +209,7 @@ public class PersonsGUI extends GridPane {
                 nameCount.put(person.name, newCount);
             }
 
-            Label personLabel = new Label(i + ": " + person.toString() +  person.getAge());
+            Label personLabel = new Label(i + ": " + person.toString() + "; " + person.getAge() + " Years old");
             Button deleteButton = new Button("Delete");
             deleteButton.setOnAction(
                     e -> {
@@ -234,7 +232,7 @@ public class PersonsGUI extends GridPane {
         }
 
         if (!persons.isEmpty()) {
-            double average = totalWeight / persons.size();
+            double average = totalWeight.get() / persons.size();
             // We round the weight so we dont get a long integer in the UI
             averageWeightLabel.setText("Average Weight: \n" + Math.round(average * 100) / 100.0);
         } else {
