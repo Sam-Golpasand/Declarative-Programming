@@ -8,7 +8,7 @@ public class Person implements Comparable<Person> {
 
     final public String name;
 
-    final public double weight;
+    private double weight;  // no longer final
 
     private Integer age;
 
@@ -34,6 +34,17 @@ public class Person implements Comparable<Person> {
       return age;
     }
 
+    public double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(double weight) {
+        if (weight <= 0) {
+            throw new IllegalArgumentException("Weight must be greater than 0");
+        }
+        this.weight = weight;
+    }
+
     @Override
     public int compareTo(@NotNull Person o) {
         // This code has been taken from the slides for assignment 3b
@@ -57,9 +68,7 @@ public class Person implements Comparable<Person> {
      */
     @Override
     public String toString() {
-        // This could be automatically generated, but this automatically
-        // generated representation is a bit too verbose. Therefore, we
-        // chose a simpler representation here.
+        
         return name + ", " + weight + "kg";
     }
 

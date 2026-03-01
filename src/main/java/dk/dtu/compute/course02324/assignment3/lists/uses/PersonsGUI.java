@@ -106,7 +106,20 @@ public class PersonsGUI extends GridPane {
                 e -> {
                     persons.clear();
                     commonNameLabel.setText("Most Common Name: \n");
-                    // makes sure that the GUI is updated accordingly
+                    update();
+                });
+
+        // button to make time pass
+        Button timeButton = new Button("Time");
+        timeButton.setOnAction(
+                e -> {
+                    persons.forEach(p -> {
+                        if (p.getAge() == 29) {
+                            p.setWeight(p.getWeight() * 1.08);
+                        }
+                        p.setAge(p.getAge() + 1);
+                    });
+                    persons.removeIf(p -> p.getAge() >= 99);
                     update();
                 });
 
@@ -135,8 +148,8 @@ public class PersonsGUI extends GridPane {
         HBox actionButtons = new HBox(addButton, sortButton, clearButton);
         actionButtons.setSpacing(5.0);
 
-        VBox actionBox = new VBox(field, weightField, ageField, actionButtons, indexField, addAtIndex, averageWeightLabel,
-                commonNameLabel, minAgeLabel, maxAgeLabel);
+        VBox actionBox = new VBox(field, weightField, ageField, actionButtons, timeButton, indexField, addAtIndex,
+                averageWeightLabel, commonNameLabel, minAgeLabel, maxAgeLabel);
         actionBox.setSpacing(5.0);
         this.add(actionBox, 0, 0);
 
@@ -193,13 +206,18 @@ public class PersonsGUI extends GridPane {
     private void update() {
         personsPane.getChildren().clear();
 
-        Optional<Double> totalWeight = persons.stream().map(p -> p.weight).reduce((lol, weight) -> lol + weight);
+        Optional<Double> totalWeight = persons.stream().map(p -> p.getWeight()).reduce((lol, weight) -> lol + weight);
 
         Map<String, Integer> nameCount = new HashMap<>();
         // adds all persons to the list in the personsPane (with
         // a delete button in front of it)
-        for (int i=0; i < persons.size(); i++) {
+        for (int i = 0; i < persons.size(); i++) {
             Person person = persons.get(i);
+
+            if (person.getAge() >= 99) {
+                persons.remove(person);
+                break;
+            }
 
             // Increment or insert name if is already in list of nameCount
             if (nameCount.get(person.name) == null) {
@@ -208,6 +226,8 @@ public class PersonsGUI extends GridPane {
                 int newCount = nameCount.get(person.name) + 1;
                 nameCount.put(person.name, newCount);
             }
+ 
+            
 
             Label personLabel = new Label(i + ": " + person.toString() + "; " + person.getAge() + " Years old");
             Button deleteButton = new Button("Delete");
@@ -220,10 +240,7 @@ public class PersonsGUI extends GridPane {
                         } finally {
                             update();
                         }
-                    }
-            );
-
-
+                    });
 
             HBox entry = new HBox(deleteButton, personLabel);
             entry.setSpacing(5.0);
@@ -243,7 +260,8 @@ public class PersonsGUI extends GridPane {
         String name = "";
         int currentMaxCount = 0;
 
-        // We use a Map to keep track of which names (keys) have occurred and keep a count (value) of how many times that name has occurred.
+        // We use a Map to keep track of which names (keys) have occurred and keep a
+        // count (value) of how many times that name has occurred.
         Set<Map.Entry<String, Integer>> nameCountSet = nameCount.entrySet();
 
         for (Map.Entry<String, Integer> entry : nameCountSet) {
@@ -257,20 +275,20 @@ public class PersonsGUI extends GridPane {
             commonNameLabel.setText("Most Common Name: \n" + name);
         }
 
-        // We first clear the pane such that we don't show the same exception twice and then we reiterate over the list of exceptions to show the current relevant ones.
+        // We first clear the pane such that we don't show the same exception twice and
+        // then we reiterate over the list of exceptions to show the current relevant
+        // ones.
         exceptionsPane.getChildren().clear();
         for (int i = 0; i < exceptions.size(); i++) {
             Exception ex = exceptions.get(i);
-            Label exLabel = new Label(ex.getClass() + " " +  ex.getMessage());
+            Label exLabel = new Label(ex.getClass() + " " + ex.getMessage());
             exceptionsPane.add(exLabel, 0, i);
         }
-
 
         Optional<Integer> maxAge = persons.stream().map(p -> p.getAge()).reduce((a, b) -> Math.max(a, b));
         Optional<Integer> minAge = persons.stream().map(p -> p.getAge()).reduce((a, b) -> Math.min(a, b));
 
-
-        if(maxAge.isPresent()) {
+        if (maxAge.isPresent()) {
             maxAgeLabel.setText("Age: " + maxAge.orElse(0));
 
         }
@@ -278,7 +296,6 @@ public class PersonsGUI extends GridPane {
         if (minAge.isPresent()) {
             minAgeLabel.setText("Age: " + minAge.orElse(0));
         }
-
 
     }
 
