@@ -2,6 +2,7 @@ package dk.dtu.compute.course02324.assignment3.lists.uses;
 
 import dk.dtu.compute.course02324.assignment3.lists.implementations.GenericComparator;
 import java.util.*;
+import java.util.stream.Collectors;  // ADD THIS IMPORT
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -206,11 +207,11 @@ public class PersonsGUI extends GridPane {
     private void update() {
         personsPane.getChildren().clear();
 
-        Optional<Double> totalWeight = persons.stream().map(p -> p.getWeight()).reduce((lol, weight) -> lol + weight);
+        Optional<Double> totalWeight = persons.stream()
+                .map(p -> p.getWeight())
+                .reduce((lol, weight) -> lol + weight);
 
-        Map<String, Integer> nameCount = new HashMap<>();
-        // adds all persons to the list in the personsPane (with
-        // a delete button in front of it)
+
         for (int i = 0; i < persons.size(); i++) {
             Person person = persons.get(i);
 
@@ -218,16 +219,6 @@ public class PersonsGUI extends GridPane {
                 persons.remove(person);
                 break;
             }
-
-            // Increment or insert name if is already in list of nameCount
-            if (nameCount.get(person.name) == null) {
-                nameCount.put(person.name, 1);
-            } else {
-                int newCount = nameCount.get(person.name) + 1;
-                nameCount.put(person.name, newCount);
-            }
- 
-            
 
             Label personLabel = new Label(i + ": " + person.toString() + "; " + person.getAge() + " Years old");
             Button deleteButton = new Button("Delete");
@@ -260,19 +251,18 @@ public class PersonsGUI extends GridPane {
         String name = "";
         int currentMaxCount = 0;
 
-        // We use a Map to keep track of which names (keys) have occurred and keep a
-        // count (value) of how many times that name has occurred.
-        Set<Map.Entry<String, Integer>> nameCountSet = nameCount.entrySet();
+        // b. Use streams to collect name frequencies into Map.Entry<String, Long>
+        Optional<Map.Entry<String, Long>> mostCommon = persons.stream()
+                .collect(Collectors.groupingBy(p -> p.name, Collectors.counting()))
+                .entrySet()
+                .stream()
+                .max(Map.Entry.comparingByValue());
 
-        for (Map.Entry<String, Integer> entry : nameCountSet) {
-            if (entry.getValue() > currentMaxCount) {
-                name = entry.getKey();
-                currentMaxCount = entry.getValue();
-            }
-        }
-
-        if (!name.isEmpty()) {
-            commonNameLabel.setText("Most Common Name: \n" + name);
+        // Update the label using the stream result
+        if (mostCommon.isPresent()) {
+            commonNameLabel.setText("Most Common Name: \n" + mostCommon.get().getKey());
+        } else {
+            commonNameLabel.setText("Most Common Name: ");
         }
 
         // We first clear the pane such that we don't show the same exception twice and
